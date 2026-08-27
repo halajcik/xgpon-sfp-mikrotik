@@ -2,7 +2,9 @@
 
 ![CRS354 se XGS-PON SFP stickem a SC/APC vláknem](docs/images/crs354-xgpon-sfp.png)
 
-Návod, jak nahradit ONT od operátora SFP+ stickem s čipem **PRX126** (WAS-110 / 8311 firmware) na **XGS-PON přípojce CETIN**. Platí pro všechny tři retail značky na téže síti: **O2, T-Mobile i Vodafone**. VLAN 848 je od CETIN, PPPoE údaje se liší podle operátora.
+Návod, jak nahradit ONT od operátora SFP+ stickem s čipem **PRX126** na **XGS-PON přípojce CETIN**. Platí pro všechny tři retail značky na téže síti: **O2, T-Mobile i Vodafone**. VLAN 848 je od CETIN, PPPoE údaje se liší podle operátora.
+
+Stick **musí mít 8311 firmware** — OpenWrt s webem **LuCI** (`fw_setenv`, `uci`, SSH). Tovární firmware bez LuCI (nebo čistě „MAC web“) na tenhle postup nestačí.
 
 Stick **klonuje sériové číslo původního ONT**. CETIN OLT pouští zařízení podle GPON SN, které už na přípojce má — nové číslo sticku nikam nehlásíš a na technickou podporu s „vlastním ONT“ nemusíš. Původní krabičku po přepnutí odpoj, ať na vlákně nejsou dvě stejná SN najednou.
 
@@ -16,7 +18,7 @@ Ověřeno na:
 | [CRS354-48G-4S+2Q+](https://mikrotik.com/product/crs354_48g_4splus2qplus) | stick v SFP+, VLAN filtering, NAT na LuCI/SSH |
 | [RB5009UG+S+](https://mikrotik.com/product/rb5009ug_s_in) | PPPoE, firewall, NAT, bez VLAN 30 |
 
-Stick jsem bral na [AliExpress](https://www.aliexpress.com/item/1005011870780610.html) — SFP+ XGS-PON ONU (MaxLinear PRX126), SC/APC, 1270/1577 nm, s 8311 firmware a malým ventilátorem v balení. Konkrétní inzerát se může změnit, hledej „XGSPON ONU STICK 8311“.
+Stick jsem bral na [AliExpress](https://www.aliexpress.com/item/1005011870780610.html) — SFP+ XGS-PON ONU (MaxLinear PRX126), SC/APC, 1270/1577 nm, **předinstalovaný 8311 firmware** (OpenWrt + LuCI) a malý ventilátor v balení. V inzerátu hledej výslovně „8311“ a ověř, že po zapojení jede web LuCI (typicky `192.168.11.1`). Konkrétní nabídka se může změnit.
 
 ![XGSPON ONU SFP+ stick z AliExpress, 8311 firmware, SC/APC](docs/images/xgspon-onu-stick.jpg)
 
@@ -36,7 +38,7 @@ SFP stick je jen optický převodník v kleci switche:
 
 ISP při výpadku často řekne „máte neschválené ONT“. Diagnostika (optika, O5, GEM) je na sticku, PPPoE na routeru — víš, která strana mlčí.
 
-Firmware: [8311-was-110-firmware-builder](https://github.com/djGrrr/8311-was-110-firmware-builder), instalace: [pon.wiki](https://pon.wiki/guides/install-the-8311-community-firmware-on-the-was-110/). Kdybys místo klonování chtěl hlásit **nové** SN sticku, je to jiná cesta — viz [Techforum — vlastní ONT na síti CETIN](https://www.techforum.cz/topic/64188-vlastn%C3%AD-ont-na-s%C3%ADti-cetin/).
+Zdroj firmware: [8311 community firmware](https://github.com/djGrrr/8311-was-110-firmware-builder) (OpenWrt + LuCI). Kdybys místo klonování chtěl hlásit **nové** SN sticku, je to jiná cesta — viz [Techforum — vlastní ONT na síti CETIN](https://www.techforum.cz/topic/64188-vlastn%C3%AD-ont-na-s%C3%ADti-cetin/).
 
 ## Topologie
 
@@ -84,7 +86,7 @@ Router VLAN 30 nevidí. Z LAN, WiFi i z iPhonu se na LuCI jde přes **`http://10
 
 ---
 
-## 1. Stick (PRX126 / 8311)
+## 1. Stick (PRX126, 8311 / OpenWrt / LuCI)
 
 ### `8311_gpon_sn` — opsat z původního ONT
 
