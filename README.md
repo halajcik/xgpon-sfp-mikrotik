@@ -92,7 +92,7 @@ Po změně reboot. Na OLT jsi „registrovaný“, když `pontop -b` ukáže **O
 
 ONT občas tiskne SN jako **16 hex číslic** (8 bajtů), ne jako `HWTC…`. Je to totéž SN, jen v surovém hex. První 4 bajty převeď na ASCII (výrobce), zbylé 4 bajty nech hex.
 
-Příklad (zase fiktivní):
+Příklad:
 
 ```
 hex ze štítku:  48 57 54 43 33 AA BB CC
