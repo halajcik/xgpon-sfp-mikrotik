@@ -93,7 +93,7 @@ Dropbear na 8311 nemá pořádný exec kanál ani SFTP. Používej interaktivní
 - **Rx power** — co stick vidí z OLT (přes splitter). Typicky řádově −15 až −25 dBm.
 - **Tx power** — co stick sám vysílá směrem k OLT, ne výkon protistrany.
 
-FEC a GTC errory mají zůstat na nule. Stav PLOAM mimo O5 znamená, že identita (SN/heslo/MIB) nesedí, ne že je špatně VLAN na switchi.
+FEC a GTC errory mají zůstat na nule. Stav PLOAM mimo O5 znamená, že klonované SN (nebo HW/SW verze) nesedí s původním ONT — ne že je špatně VLAN na switchi. 16znakový hex zadaný místo 4 ASCII + 8 hex dá OLT jiné číslo, než čeká.
 
 ## Rychlý checklist
 
@@ -104,4 +104,5 @@ FEC a GTC errory mají zůstat na nule. Stav PLOAM mimo O5 znamená, že identit
 | ARP z 10.0.0.0/22 na sticku | PVID ONU portu |
 | iPhone timeout na 192.168.11.1 | NAT `10.0.0.100:8111` + vypnout HTTPS redirect |
 | GEM TX > 0, RX = 0 | OLT / VLAN 848 nechodí dolů |
-| PLOAM ≠ O5 | `8311_gpon_sn` a zbytek identity |
+| PLOAM ≠ O5 | `8311_gpon_sn` (tvar 4 písmena + 8 hex, ne 16 hex) |
+| PPPoE connected, ale žádný internet | špatné PPPoE údaje operátora (O2/`vf`/T-Mobile účet) |

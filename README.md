@@ -1,6 +1,10 @@
-# Vlastní XGS-PON SFP stick (PRX126) na MikroTiku
+# Jak na vlastní optický SFP od CETIN (O2, T-Mobile, Vodafone)
 
-Návod, jak nahradit ISP ONT SFP+ stickem s čipem **PRX126** (WAS-110 / 8311 firmware), protáhnout **VLAN 848 (PPPoE CETIN)** přes CRS do routeru a management sticku nechat jen na switchi přes NAT.
+Návod, jak nahradit ONT od operátora SFP+ stickem s čipem **PRX126** (WAS-110 / 8311 firmware) na **XGS-PON přípojce CETIN**. Platí pro všechny tři retail značky na téže síti: **O2, T-Mobile i Vodafone**. VLAN 848 je od CETIN, PPPoE údaje se liší podle operátora.
+
+Stick **klonuje sériové číslo původního ONT**. CETIN OLT pouští zařízení podle GPON SN, které už na přípojce má — nové číslo sticku nikam nehlásíš a na technickou podporu s „vlastním ONT“ nemusíš. Původní krabičku po přepnutí odpoj, ať na vlákně nejsou dvě stejná SN najednou.
+
+Dál: VLAN 848 (PPPoE) přes CRS do routeru, management sticku jen na switchi přes NAT.
 
 Ověřeno na:
 
@@ -10,7 +14,7 @@ Ověřeno na:
 | MikroTik CRS (RouterOS 7) | stick v SFP+, VLAN filtering, NAT na LuCI/SSH |
 | MikroTik router (RouterOS 7) | PPPoE klient na VLAN 848, bez VLAN 30 |
 
-CETIN identita sticku (GPON SN, HW/SW verze) se bere z původního ONT. Základní postup registrace je popsaný na [Techforum — vlastní ONT na síti CETIN](https://www.techforum.cz/topic/64188-vlastn%C3%AD-ont-na-s%C3%ADti-cetin/). Firmware: [8311-was-110-firmware-builder](https://github.com/djGrrr/8311-was-110-firmware-builder), instalace: [pon.wiki](https://pon.wiki/guides/install-the-8311-community-firmware-on-the-was-110/).
+Firmware: [8311-was-110-firmware-builder](https://github.com/djGrrr/8311-was-110-firmware-builder), instalace: [pon.wiki](https://pon.wiki/guides/install-the-8311-community-firmware-on-the-was-110/). Kdybys místo klonování chtěl hlásit **nové** SN sticku, je to jiná cesta — viz [Techforum — vlastní ONT na síti CETIN](https://www.techforum.cz/topic/64188-vlastn%C3%AD-ont-na-s%C3%ADti-cetin/).
 
 ## Topologie
 
@@ -59,20 +63,61 @@ Router VLAN 30 nevidí. Z LAN, WiFi i z iPhonu se na LuCI jde přes **`http://10
 
 ## 1. Stick (PRX126 / 8311)
 
-### Co musí sedět vůči OLT
+### Klonování identity původního ONT
 
-OLT stick pozná podle **GPON serial number** (4 písmena + 8 hex) a často i HW/SW verze a Equipment ID. Zkopíruj to z původního ONT, ne ze sticku z krabice.
+OLT stick pustí, když vysílá **stejné GPON serial number** jako ONT, které na přípojce doteď viselo. Firmware 8311 to umí nastavit (`8311_gpon_sn`). Tím se vyhneš objednávce „vlastní ONT“ u operátora a čekání, až CETIN zapíše nové SN.
 
-```bash
-fw_setenv 8311_gpon_sn ABCD12345678
+Často je potřeba zkopírovat i **HW verzi, SW verzi a Equipment ID** — OLT je u některých profilů kontroluje. Vezmi je z původního ONT (štítek, web, `omci` dump), ne z krabice sticku.
+
+Do `8311_gpon_sn` patří tvar **4 ASCII písmena + 8 hex číslic**, celkem 12 znaků, například `HWTC33AABBCC`. **Ne** 16znakový čistý hex.
+
+```
+fw_setenv 8311_gpon_sn HWTC33AABBCC
 ```
 
-Po změně identity reboot. Registrace na OLT = stav **O5** (PLOAM Associated). Na sticku:
+Po změně identity reboot. Registrace na OLT = stav **O5** (PLOAM Associated):
 
-```bash
+```
 pontop -b
 # PLOAM status: O5.1 / O5
 ```
+
+### Převod hexadecimálního SN na tvar pro stick
+
+Na štítku nebo ve webu ONT bývá sériové číslo jako **16 hex znaků** (8 bajtů). První 4 bajty jsou výrobce v ASCII, zbylé 4 bajty zůstanou hex.
+
+Příklad:
+
+```
+hex z ONT:  48 57 54 43 33 AA BB CC
+            -- -- -- -- ----------
+            H  W  T  C  33AABBCC
+
+do sticku:  HWTC33AABBCC
+```
+
+| Hex | Význam |
+| --- | --- |
+| `48 57 54 43` | ASCII → `H W T C` |
+| `33 AABBCC` | necháš jako hex `33AABBCC` |
+
+PowerShell:
+
+```
+$h = '4857544333AABBCC'
+$vendor = -join @(0,2,4,6 | ForEach-Object { [char][Convert]::ToInt32($h.Substring($_,2), 16) })
+$vendor + $h.Substring(8).ToUpper()
+# HWTC33AABBCC
+```
+
+Python:
+
+```
+h = '4857544333AABBCC'
+print(bytes.fromhex(h[:8]).decode('ascii') + h[8:].upper())
+```
+
+Když ONT už ukazuje `HWTC33AABBCC`, nic nepřevádíš. Když zadáš do sticku plný hex `4857544333AABBCC`, firmware to špatně rozparsuje a OLT uvidí jiné SN, než čeká.
 
 ### Management IP
 
@@ -203,13 +248,23 @@ www na CRS nech vypnuté (`/ip service disable www`), ať port 80 na switchi nik
 
 ## 4. Router — jen PPPoE
 
-```rsc
+Přípojka je vždy CETIN, internetová VLAN je vždy **848**. Liší se jen PPPoE jméno a heslo podle toho, kdo ti službu fakturuje:
+
+| Operátor | Uživatel | Heslo |
+| --- | --- | --- |
+| O2 | `O2` | `O2` |
+| Vodafone | `vf` | `vf` |
+| T-Mobile | vlastní účet | vlastní heslo |
+
+T-Mobile nemá univerzální `O2`/`vf`. Účet je typicky ve tvaru `optin……@optin.t-mobile.cz`; heslo máš ve smlouvě, nebo ho pošle podpora. (Oficiální tabulka T-Mobile pro FTTx přes CETIN převodník uvádí i `adsl` / `adsl` — pokud osobní účet nemáš, zkus tohle.)
+
+```
 /interface vlan add name=OptikaVLAN848 vlan-id=848 interface=bridge
 /interface pppoe-client add name="optika internet" interface=OptikaVLAN848 \
     user="O2" password="O2" add-default-route=yes use-peer-dns=yes
 ```
 
-U CETIN jsou PPPoE údaje běžně `O2` / `O2`. VLAN 848 musí být tagged na uplinku ke CRS.
+U Vodafone dej `vf`/`vf`, u T-Mobile svůj účet. VLAN 848 musí být tagged na uplinku ke CRS. MTU 1492.
 
 Na routeru:
 
