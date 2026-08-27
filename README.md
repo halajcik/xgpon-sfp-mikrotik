@@ -20,6 +20,20 @@ Stick jsem bral na [AliExpress](https://www.aliexpress.com/item/1005011870780610
 
 Stick je v **CRS354**, ne v routeru. CRS má na SFP+/QSFP klecích slušné chlazení, takže PRX126 (který topí) tam dává smysl. CPU CRS je ale slabé (MIPS) — na PPPoE, firewall a domácí provoz nestačí. Routing proto běží na **RB5009**, CRS zůstane switchem.
 
+## Proč tohle místo ONT od operátora
+
+Klasické ONT je plastová krabička s GE portem (často pořád 1 Gbit), WiFi a locknutým firmware. CETIN/operátor na ní má OMCI i TR-069, LAN ti skončí za jejich NATem nebo za mostem, který nejde pořádně řídit.
+
+SFP stick je jen optický převodník v kleci switche:
+
+- **10 Gbit až do CRS.** XGS-PON není uškrcené na 1G ethernet z ONT. PPPoE končí na RB5009, firewall, VLAN a QoS máš celé svoje.
+- **O jednu krabičku méně.** Vlákno jde do SFP+, žádný další zdroj, žádný plast na skříni.
+- **Žádný operátorský router v cestě.** Stick jen bridguje VLAN 848. DNS, DHCP, WiFi, VPN řeší MikroTik, ne Sagemcom/ZTE od O2/VF/T-Mobile.
+- **Stejná přípojka, stejné SN.** OLT pořád vidí původní ONT. Neměníš tarif ani nečekáš na „vlastní ONT“ u podpory.
+- **Chlazení v CRS.** Stick topí; SFP+ klec v 354 zvládne odvod tepla líp než uzavřené ONT. Routing na MIPS v CRS by naopak brzdil — proto RB5009.
+
+ISP při výpadku často řekne „máte neschválené ONT“. Diagnostika (optika, O5, GEM) je na sticku, PPPoE na routeru — víš, která strana mlčí.
+
 Firmware: [8311-was-110-firmware-builder](https://github.com/djGrrr/8311-was-110-firmware-builder), instalace: [pon.wiki](https://pon.wiki/guides/install-the-8311-community-firmware-on-the-was-110/). Kdybys místo klonování chtěl hlásit **nové** SN sticku, je to jiná cesta — viz [Techforum — vlastní ONT na síti CETIN](https://www.techforum.cz/topic/64188-vlastn%C3%AD-ont-na-s%C3%ADti-cetin/).
 
 ## Topologie
