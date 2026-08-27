@@ -70,9 +70,9 @@ Router VLAN 30 nevidí. Z LAN, WiFi i z iPhonu se na LuCI jde přes **`http://10
 
 ## 1. Stick (PRX126 / 8311)
 
-### `8311_gpon_sn` — ne vymýšlet, opsat z původního ONT
+### `8311_gpon_sn` — opsat z původního ONT
 
-Hodnotu `8311_gpon_sn` si **nevymýšlíš**. Není to náhodný řetězec ani výrobní číslo ze sticku z AliExpressu. Je to **GPON serial number tvého stávajícího ONT**, které CETIN už na přípojce zná. Stick se jen tváří jako ta samá krabička.
+`8311_gpon_sn` je **GPON serial number stávajícího ONT**, které CETIN už na přípojce zná. Stick se jen tváří jako ta samá krabička. Výrobní číslo ze sticku z AliExpressu OLT nezná.
 
 1. Najdi SN na **původním ONT** (ještě než ho odpojíš od vlákna): štítek na spodku / boku, někdy i v jeho webu (PON / Device info). Hledej „GPON SN“, „PON SN“, „Serial Number“, ne LAN MAC.
 2. Číslo ze **sticku** (PACBTECH / S/N na modulu) CETIN v OLT nemá — to nechej být.
@@ -80,7 +80,7 @@ Hodnotu `8311_gpon_sn` si **nevymýšlíš**. Není to náhodný řetězec ani v
 
 Často je potřeba zkopírovat i **HW verzi, SW verzi a Equipment ID** ze stejného ONT — OLT je u některých profilů kontroluje.
 
-Do `8311_gpon_sn` patří přesně **12 znaků: 4 písmena výrobce + 8 hex číslic**. `HWTC33AABBCC` níž je vymyšlený příklad — u tebe bude jiné, podle štítku.
+Do `8311_gpon_sn` patří přesně **12 znaků: 4 písmena výrobce + 8 hex číslic**. `HWTC33AABBCC` níž je jen ukázkový formát — u tebe bude jiné, podle štítku.
 
 ```
 fw_setenv 8311_gpon_sn HWTC33AABBCC
@@ -90,7 +90,7 @@ Po změně reboot. Na OLT jsi „registrovaný“, když `pontop -b` ukáže **O
 
 ### Když je na štítku 16 hex znaků, odvoď z nich těch 12
 
-ONT občas tiskne SN jako **16 hex číslic** (8 bajtů), ne jako `HWTC…`. To není nové číslo k vymyšlení — je to totéž SN, jen v surovém hex. První 4 bajty převeď na ASCII (výrobce), zbylé 4 bajty nech hex.
+ONT občas tiskne SN jako **16 hex číslic** (8 bajtů), ne jako `HWTC…`. Je to totéž SN, jen v surovém hex. První 4 bajty převeď na ASCII (výrobce), zbylé 4 bajty nech hex.
 
 Příklad (zase fiktivní):
 
