@@ -11,8 +11,10 @@ Ověřeno na:
 | Kus | Role |
 | --- | --- |
 | SFP+ ONU stick PRX126 | XGS-PON, 8311 community firmware |
-| MikroTik CRS (RouterOS 7) | stick v SFP+, VLAN filtering, NAT na LuCI/SSH |
-| MikroTik router (RouterOS 7) | PPPoE klient na VLAN 848, bez VLAN 30 |
+| [CRS354-48G-4S+2Q+](https://mikrotik.com/product/crs354_48g_4splus2qplus) | stick v SFP+, VLAN filtering, NAT na LuCI/SSH |
+| [RB5009UG+S+](https://mikrotik.com/product/rb5009ug_s_in) | PPPoE, firewall, NAT, bez VLAN 30 |
+
+Stick je v **CRS354**, ne v routeru. CRS má na SFP+/QSFP klecích slušné chlazení, takže PRX126 (který topí) tam dává smysl. CPU CRS je ale slabé (MIPS) — na PPPoE, firewall a domácí provoz nestačí. Routing proto běží na **RB5009**, CRS zůstane switchem.
 
 Firmware: [8311-was-110-firmware-builder](https://github.com/djGrrr/8311-was-110-firmware-builder), instalace: [pon.wiki](https://pon.wiki/guides/install-the-8311-community-firmware-on-the-was-110/). Kdybys místo klonování chtěl hlásit **nové** SN sticku, je to jiná cesta — viz [Techforum — vlastní ONT na síti CETIN](https://www.techforum.cz/topic/64188-vlastn%C3%AD-ont-na-s%C3%ADti-cetin/).
 
@@ -24,7 +26,8 @@ Firmware: [8311-was-110-firmware-builder](https://github.com/djGrrr/8311-was-110
                          SC/APC pigtail
                                 |
                     +-----------+-----------+
-                    |  CRS  sfp-…-xgpon     |
+                    |  CRS354-48G-4S+2Q+    |
+                    |  sfp-…-xgpon          |
                     |  PVID 30  (untagged)  |
                     |  tagged VLAN 848      |
                     |                       |
@@ -34,7 +37,7 @@ Firmware: [8311-was-110-firmware-builder](https://github.com/djGrrr/8311-was-110
                                 | trunk
                                 | tagged 10, 848, …
                     +-----------+-----------+
-                    |  Router               |
+                    |  RB5009UG+S+          |
                     |  vlan-lan 10.0.0.1    |
                     |  OptikaVLAN848        |
                     |  pppoe "optika"       |
