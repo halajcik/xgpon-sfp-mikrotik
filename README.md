@@ -70,51 +70,50 @@ Router VLAN 30 nevidí. Z LAN, WiFi i z iPhonu se na LuCI jde přes **`http://10
 
 ## 1. Stick (PRX126 / 8311)
 
-### Klonování identity původního ONT
+### `8311_gpon_sn` — ne vymýšlet, opsat z původního ONT
 
-OLT stick pustí, když vysílá **stejné GPON serial number** jako ONT, které na přípojce doteď viselo. Firmware 8311 to umí nastavit (`8311_gpon_sn`). Tím se vyhneš objednávce „vlastní ONT“ u operátora a čekání, až CETIN zapíše nové SN.
+Hodnotu `8311_gpon_sn` si **nevymýšlíš**. Není to náhodný řetězec ani výrobní číslo ze sticku z AliExpressu. Je to **GPON serial number tvého stávajícího ONT**, které CETIN už na přípojce zná. Stick se jen tváří jako ta samá krabička.
 
-Často je potřeba zkopírovat i **HW verzi, SW verzi a Equipment ID** — OLT je u některých profilů kontroluje. Vezmi je z původního ONT (štítek, web, `omci` dump), ne z krabice sticku.
+1. Najdi SN na **původním ONT** (ještě než ho odpojíš od vlákna): štítek na spodku / boku, někdy i v jeho webu (PON / Device info). Hledej „GPON SN“, „PON SN“, „Serial Number“, ne LAN MAC.
+2. Číslo ze **sticku** (PACBTECH / S/N na modulu) CETIN v OLT nemá — to nechej být.
+3. Stejné SN nesmí viset na vlákně dvakrát. Až stick naběhne, původní ONT odpoj.
 
-Do `8311_gpon_sn` patří tvar **4 ASCII písmena + 8 hex číslic**, celkem 12 znaků, například `HWTC33AABBCC`. **Ne** 16znakový čistý hex.
+Často je potřeba zkopírovat i **HW verzi, SW verzi a Equipment ID** ze stejného ONT — OLT je u některých profilů kontroluje.
+
+Do `8311_gpon_sn` patří přesně **12 znaků: 4 písmena výrobce + 8 hex číslic**. `HWTC33AABBCC` níž je vymyšlený příklad — u tebe bude jiné, podle štítku.
 
 ```
 fw_setenv 8311_gpon_sn HWTC33AABBCC
 ```
 
-Po změně identity reboot. Registrace na OLT = stav **O5** (PLOAM Associated):
+Po změně reboot. Na OLT jsi „registrovaný“, když `pontop -b` ukáže **O5** (PLOAM Associated).
+
+### Když je na štítku 16 hex znaků, odvoď z nich těch 12
+
+ONT občas tiskne SN jako **16 hex číslic** (8 bajtů), ne jako `HWTC…`. To není nové číslo k vymyšlení — je to totéž SN, jen v surovém hex. První 4 bajty převeď na ASCII (výrobce), zbylé 4 bajty nech hex.
+
+Příklad (zase fiktivní):
 
 ```
-pontop -b
-# PLOAM status: O5.1 / O5
+hex ze štítku:  48 57 54 43 33 AA BB CC
+                -- -- -- -- ----------
+ASCII výrobce:  H  W  T  C
+zbytek hex:                 33AABBCC
+
+do 8311_gpon_sn:  HWTC33AABBCC
 ```
 
-### Převod hexadecimálního SN na tvar pro stick
-
-Na štítku nebo ve webu ONT bývá sériové číslo jako **16 hex znaků** (8 bajtů). První 4 bajty jsou výrobce v ASCII, zbylé 4 bajty zůstanou hex.
-
-Příklad:
-
-```
-hex z ONT:  48 57 54 43 33 AA BB CC
-            -- -- -- -- ----------
-            H  W  T  C  33AABBCC
-
-do sticku:  HWTC33AABBCC
-```
-
-| Hex | Význam |
+| Hex | Co s tím |
 | --- | --- |
-| `48 57 54 43` | ASCII → `H W T C` |
-| `33 AABBCC` | necháš jako hex `33AABBCC` |
+| `48 57 54 43` | převod na písmena → `HWTC` |
+| `33AABBCC` | zkopíruješ jak je |
 
-PowerShell:
+PowerShell (dosadíš **svůj** hex ze štítku):
 
 ```
 $h = '4857544333AABBCC'
 $vendor = -join @(0,2,4,6 | ForEach-Object { [char][Convert]::ToInt32($h.Substring($_,2), 16) })
 $vendor + $h.Substring(8).ToUpper()
-# HWTC33AABBCC
 ```
 
 Python:
@@ -124,7 +123,7 @@ h = '4857544333AABBCC'
 print(bytes.fromhex(h[:8]).decode('ascii') + h[8:].upper())
 ```
 
-Když ONT už ukazuje `HWTC33AABBCC`, nic nepřevádíš. Když zadáš do sticku plný hex `4857544333AABBCC`, firmware to špatně rozparsuje a OLT uvidí jiné SN, než čeká.
+Když štítek už ukazuje 12 znaků typu `HWTC33AABBCC`, nic nepřevádíš, jen to opíšeš. Když do `fw_setenv` strčíš plných 16 hex (`4857544333AABBCC`), 8311 to špatně rozparsuje a OLT uvidí **jiné** SN, než má ve smlouvě — stick skončí mimo O5.
 
 ### Management IP
 
