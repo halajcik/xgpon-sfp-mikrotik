@@ -10,9 +10,13 @@ Ověřeno na:
 
 | Kus | Role |
 | --- | --- |
-| SFP+ ONU stick PRX126 | XGS-PON, 8311 community firmware |
+| [XGSPON ONU stick SFP+](https://www.aliexpress.com/item/1005011870780610.html) (PRX126, 8311) | koupený na AliExpress, XGS-PON do SFP+ |
 | [CRS354-48G-4S+2Q+](https://mikrotik.com/product/crs354_48g_4splus2qplus) | stick v SFP+, VLAN filtering, NAT na LuCI/SSH |
 | [RB5009UG+S+](https://mikrotik.com/product/rb5009ug_s_in) | PPPoE, firewall, NAT, bez VLAN 30 |
+
+Stick jsem bral na [AliExpress](https://www.aliexpress.com/item/1005011870780610.html) — SFP+ XGS-PON ONU (MaxLinear PRX126), SC/APC, 1270/1577 nm, s 8311 firmware a malým ventilátorem v balení. Konkrétní inzerát se může změnit, hledej „XGSPON ONU STICK 8311“.
+
+![XGSPON ONU SFP+ stick z AliExpress, 8311 firmware, SC/APC](docs/images/xgspon-onu-stick.jpg)
 
 Stick je v **CRS354**, ne v routeru. CRS má na SFP+/QSFP klecích slušné chlazení, takže PRX126 (který topí) tam dává smysl. CPU CRS je ale slabé (MIPS) — na PPPoE, firewall a domácí provoz nestačí. Routing proto běží na **RB5009**, CRS zůstane switchem.
 
