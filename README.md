@@ -125,6 +125,12 @@ print(bytes.fromhex(h[:8]).decode('ascii') + h[8:].upper())
 
 Když štítek už ukazuje 12 znaků typu `HWTC33AABBCC`, nic nepřevádíš, jen to opíšeš. Když do `fw_setenv` strčíš plných 16 hex (`4857544333AABBCC`), 8311 to špatně rozparsuje a OLT uvidí **jiné** SN, než má ve smlouvě — stick skončí mimo O5.
 
+### Hookscript nepotřebuješ
+
+Na CETIN (tagged VLAN 848, OLT filtruje samo) **vlastní hookscript není potřeba**. PPPoE prochází bridgem, nic se nepřemapovává.
+
+Firmware 8311 má vestavěné `8311_fix_vlans` a soubor `/ptconf/8311/vlan_fixes_hook.sh`. To je místo pro ruční zásahy u ISP, kde OLT maže VLAN pravidla. U tohoto postupu to nechej prázdné, nebo soubor klidně smaž. Když tam někdo (nebo prodejce) nacpe `uci set gpon.ploam.nSerial='…16 hex…'`, je to špatně — identita patří do `8311_gpon_sn` ve fwenv, v 12znakovém tvaru.
+
 ### Management IP
 
 LCT je untagged. IP drž v rozsahu, který **není** tvoje LAN — jinak se ti do PON začnou sypat ARP z domácí sítě.
