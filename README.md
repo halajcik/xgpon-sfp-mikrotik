@@ -1,5 +1,7 @@
 # Jak na vlastní optický SFP od CETIN (O2, T-Mobile, Vodafone)
 
+![CRS354 se XGS-PON SFP stickem a SC/APC vláknem](docs/images/crs354-xgpon-sfp.png)
+
 Návod, jak nahradit ONT od operátora SFP+ stickem s čipem **PRX126** (WAS-110 / 8311 firmware) na **XGS-PON přípojce CETIN**. Platí pro všechny tři retail značky na téže síti: **O2, T-Mobile i Vodafone**. VLAN 848 je od CETIN, PPPoE údaje se liší podle operátora.
 
 Stick **klonuje sériové číslo původního ONT**. CETIN OLT pouští zařízení podle GPON SN, které už na přípojce má — nové číslo sticku nikam nehlásíš a na technickou podporu s „vlastním ONT“ nemusíš. Původní krabičku po přepnutí odpoj, ať na vlákně nejsou dvě stejná SN najednou.
