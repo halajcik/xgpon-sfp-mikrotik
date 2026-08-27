@@ -30,7 +30,7 @@ Klasické ONT je plastová krabička s GE portem (často pořád 1 Gbit), WiFi a
 
 SFP stick je jen optický převodník v kleci switche:
 
-- **10 Gbit až do CRS.** XGS-PON není uškrcené na 1G ethernet z ONT. PPPoE končí na RB5009, firewall, VLAN a QoS máš celé svoje.
+- **10 Gbit až do CRS, bez 10G mědi.** XGS-PON není uškrcené na 1G z ONT. 10Gb ethernet (RJ45) má velkou spotřebu a hodně topí; SFP+ drží 10 Gbit v kleci switche, bez dalšího 10G měděného hopu. PPPoE končí na RB5009.
 - **O jednu krabičku méně.** Vlákno jde do SFP+, žádný další zdroj, žádný plast na skříni.
 - **Žádný operátorský router v cestě.** Stick jen bridguje VLAN 848. DNS, DHCP, WiFi, VPN řeší MikroTik, ne Sagemcom/ZTE od O2/VF/T-Mobile.
 - **Stejná přípojka, stejné SN.** OLT pořád vidí původní ONT. Neměníš tarif ani nečekáš na „vlastní ONT“ u podpory.
